@@ -31,15 +31,10 @@ names(data) <- filenames
 test_data <-  data[grep("_test", names(data))] %>% 
   list_modify("subject_test"=NULL, "x_test"=NULL, "y_test"=NULL)
 
-# adding a column with the name of the dataframe
-acceleration_test <- test_data[grep("body|total", names(test_data))] %>% 
+# adding a column with the name of the dataframe and putting data into long tidy form
+inertial_signal <- test_data[grep("body|total", names(test_data))] %>% 
   map2_df(names(.), ~ mutate(.x, type = .y)) %>% 
-  select(type, everything()) # %>% 
-  # rename_at(vars(contains("X")),   .funs = list(~sub("X", "", .)))
-names(test_data)
-
-# Putting the data into long form
-acceleration <-  acceleration_test %>% 
+  select(type, everything()) %>%  
   pivot_longer(
     cols = starts_with("X"),
     names_to = "readings",
@@ -48,7 +43,7 @@ acceleration <-  acceleration_test %>%
   mutate(readings = str_remove(readings, "X"))
 
 
-head(acceleration, 20)
+head(inertial_signal, 20)
 # Tyding the data
 
 
