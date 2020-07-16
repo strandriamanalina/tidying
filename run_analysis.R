@@ -1,4 +1,4 @@
-# Loading the packages
+# Loading the packages - This code needs tidyverse to work as it is using readr, tidyr, purrr, and stringr
 library(tidyverse)
 
 # Downloading data
@@ -30,6 +30,16 @@ names(data) <- filenames
 # Merging test data
 test_data <-  data[grep("_test", names(data))]
 acceleration_test <- test_data[grep("body|total", names(test_data))]
+
+columns <- acceleration_test %>% 
+  map(~colnames(.))
+
+columns
+
+renames_acc <- acceleration_test %>% 
+  
+  
+  
 
 
 train_data <- data[grep("_train", names(data))]
