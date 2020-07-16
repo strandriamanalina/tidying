@@ -28,8 +28,23 @@ data <- list %>%
 names(data) <- filenames
 
 # Merging test data
-test_data <-  data[grep("_test", names(data))]
-acceleration_test <- test_data[grep("body|total", names(test_data))]
+test_data <-  data[grep("_test", names(data))] %>% 
+  list_modify("subject_test"=NULL, "x_test"=NULL, "y_test"=NULL)
+
+# adding a column with the name of the dataframe and putting data into long tidy form
+inertial_signal <- test_data[grep("body|total", names(test_data))] %>% 
+  map2_df(names(.), ~ mutate(.x, type = .y)) %>% 
+  select(type, everything()) %>%  
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "readings",
+    values_to = "values",
+  ) %>% 
+  mutate(readings = str_remove(readings, "X"))
+
+
+head(inertial_signal, 20)
+# Tyding the data
 
 columns <- acceleration_test %>% 
   map(~colnames(.))
