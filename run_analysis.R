@@ -28,8 +28,28 @@ data <- list %>%
 names(data) <- filenames
 
 # Merging test data
-test_data <-  data[grep("_test", names(data))]
-acceleration_test <- test_data[grep("body|total", names(test_data))]
+test_data <-  data[grep("_test", names(data))] %>% 
+  list_modify("subject_test"=NULL, "x_test"=NULL, "y_test"=NULL)
+
+# adding a column with the name of the dataframe
+acceleration_test <- test_data[grep("body|total", names(test_data))] %>% 
+  map2_df(names(.), ~ mutate(.x, type = .y)) %>% 
+  select(type, everything()) # %>% 
+  # rename_at(vars(contains("X")),   .funs = list(~sub("X", "", .)))
+names(test_data)
+
+# Putting the data into long form
+acceleration <-  acceleration_test %>% 
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "readings",
+    values_to = "values",
+  ) %>% 
+  mutate(readings = str_remove(readings, "X"))
+
+
+head(acceleration, 20)
+# Tyding the data
 
 
 train_data <- data[grep("_train", names(data))]
