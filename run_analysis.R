@@ -1,3 +1,6 @@
+# installing tidyverse if not present
+
+
 # Loading the packages - This code needs tidyverse to work as it is using readr, tidyr, purrr, stringr and forcats
 suppressPackageStartupMessages(library(tidyverse))
 
@@ -16,19 +19,20 @@ suppressPackageStartupMessages(library(tidyverse))
 
 # listing the files with their full paths
 directory <- "UCI HAR Dataset"
-list <- list.files(directory,pattern = ".txt" , recursive = TRUE, full.names = TRUE)
+initial <- list.files(directory,pattern = ".txt" , recursive = TRUE, full.names = TRUE)
+list <- initial[!str_detect(initial,pattern="body|total|subject|readme")] # removes inertial data from the list
 
-# listing the filenames without the extension 
+# putting all the data into a list and adding name. This puts everything into a big list. 
+data <- list %>% 
+  map(~read_table(., col_names =FALSE, progress = show_progress(), )) # creates a Big list of all of the data
+
+# listing the filenames without the extension and using it to name the columns
 filenames <- list %>%
   basename() %>% # This takes the list with full paths and returns only the names
   gsub(pattern =".txt",replacement = "") %>% # This removes the extension
   tolower
-
-# putting all the data into a list and adding name. This puts everything into a big list. 
-# I did this only because I want to tidy the inertial data as extra work. Alternatively, I could select only the files that I need
-data <- list %>% 
-  map(~read_table(., col_names =FALSE, progress = show_progress(), )) # creates a Big list of all of the data
 names(data) <- filenames # assigning names to the list
+glimpse(filenames)
 
 # Extracting the training and test sets
 data_test <- bind_cols(data[c("x_test", "y_test")]) %>% 
@@ -42,7 +46,7 @@ data_train <- bind_cols(data[c("x_train", "y_train")]) %>% rename(labels = X1100
 features <- data[("features")] %>%  unlist # This is the features names transformed into a character vector 
 tidydata <- bind_rows(data_test, data_train) %>% 
   rename_at(vars(grep("X", names(.))), ~features) # This renames all of the columns that contain X
-
+str(tidydata)
 
 ##-----------------------------------------------------------------------------------------
 ##  Extracting the measurements on the mean and standard deviation for each measurement   -
@@ -50,8 +54,9 @@ tidydata <- bind_rows(data_test, data_train) %>%
 
 # Selecting the columns that contain mean and std
 measurement <- tidydata %>% 
-  select(contains("mean")|contains("std"))
-
+  select(labels, source, contains("mean")|contains("std")) %>% 
+  select(-contains("meanFreq")) # may or may not be useful to remove
+str(measurement)
 
 ##-----------------------------------------------------------------------------
 ##  Using descriptive activity names to name the activities in the data set   -
@@ -75,6 +80,7 @@ labels <- data[c("activity_labels")] %>%  as_tibble
 
 # EXTRA
 ## This part was not explicitly part of the assignment but I did it for fun
+
 
 # Selecting the inertial signal files and loading them into data
 test_data <-  data %>% 
