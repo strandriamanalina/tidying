@@ -1,5 +1,5 @@
 # Loading the packages - This code needs tidyverse to work as it is using readr, tidyr, purrr, stringr and forcats
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 
 # Downloading data
 # url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
@@ -13,49 +13,51 @@ library(tidyverse)
 ##--------------------------------------------------------------------
 ##  Merging the training and the test sets to create one data set   -
 ##--------------------------------------------------------------------
+
 # listing the files with their full paths
 directory <- "UCI HAR Dataset"
 list <- list.files(directory,pattern = ".txt" , recursive = TRUE, full.names = TRUE)
+
 # listing the filenames without the extension 
 filenames <- list %>%
-  basename() %>% # This takes the list with full pats and returns only the names
+  basename() %>% # This takes the list with full paths and returns only the names
   gsub(pattern =".txt",replacement = "") %>% # This removes the extension
   tolower
 
-# putting all the data into a list and adding name. This puts everything into a big list. I did this only because I want to tidy the inertial data as extra work.
+# putting all the data into a list and adding name. This puts everything into a big list. 
+# I did this only because I want to tidy the inertial data as extra work. Alternatively, I could select only the files that I need
 data <- list %>% 
   map(~read_table(., col_names =FALSE, progress = show_progress(), )) # creates a Big list of all of the data
 names(data) <- filenames # assigning names to the list
 
 # Extracting the training and test sets
-labels <- data[c("activity_labels", "features")]
-test <- data[c("x_test", "y_test", "x_train", "y_train")]
+data_test <- bind_cols(data[c("x_test", "y_test")]) %>% 
+  rename(labels = X1100) %>%  # renaming the y_test label
+  mutate(source = "test_set") %>% # adding a column to identify the source of the data
+  select(labels, source, everything()) # arranging column order
+# doing the same with the training sets
+data_train <- bind_cols(data[c("x_train", "y_train")]) %>% rename(labels = X1100) %>%  mutate(source = "training_set") %>% select(labels, source, everything())
 
-data_list <- data[c("x_test", "y_test")]
-data_list <-  bind_cols(data_list)
-
-features <- data[c("x_test", "x_train")] %>% # Merging training and test data
-  map2_df(names(.), ~ mutate(.x, type = .y))  %>% # This puts the data frame name in a column and transforms the list into a data frame
-  separate(type, into = c("var", "data_source"), sep="_") %>% # separating the source name
-  select(-var) # removing unsed column
-
-# Adding the training labels
-
-
-# dropping unused data
-# Tyding the data
-
+# Merging the training and test sets and adding the features name
+features <- data[("features")] %>%  unlist # This is the features names transformed into a character vector 
+tidydata <- bind_rows(data_test, data_train) %>% 
+  rename_at(vars(grep("X", names(.))), ~features) # This renames all of the columns that contain X
 
 
 ##-----------------------------------------------------------------------------------------
 ##  Extracting the measurements on the mean and standard deviation for each measurement   -
 ##-----------------------------------------------------------------------------------------
 
+# Selecting the columns that contain mean and std
+measurement <- tidydata %>% 
+  select(contains("mean")|contains("std"))
 
 
 ##-----------------------------------------------------------------------------
 ##  Using descriptive activity names to name the activities in the data set   -
 ##-----------------------------------------------------------------------------
+# Adding the training labels
+labels <- data[c("activity_labels")] %>%  as_tibble
 
 
 
