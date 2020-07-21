@@ -43,7 +43,7 @@ data_test <- bind_cols(data[c("x_test", "y_test")]) %>%
 data_train <- bind_cols(data[c("x_train", "y_train")]) %>% rename(labels = X1100) %>%  mutate(source = "training_set") %>% select(labels, source, everything())
 
 # Merging the training and test sets and adding the features name
-features <- data[("features")] %>%  unlist # This is the features names transformed into a character vector 
+features <- data[("features")] %>%  unlist
 tidydata <- bind_rows(data_test, data_train) %>% 
   rename_at(vars(grep("X", names(.))), ~features) # This renames all of the columns that contain X
 str(tidydata)
@@ -54,23 +54,36 @@ str(tidydata)
 
 # Selecting the columns that contain mean and std
 measurement <- tidydata %>% 
-  select(labels, source, contains("mean")|contains("std")) %>% 
-  select(-contains("meanFreq")) # may or may not be useful to remove
+  select(labels, source, contains("mean()")|contains("std()")) 
 str(measurement)
 
 ##-----------------------------------------------------------------------------
 ##  Using descriptive activity names to name the activities in the data set   -
 ##-----------------------------------------------------------------------------
 # Adding the training labels
-labels <- data[c("activity_labels")] %>%  as_tibble
+labels <- data[c("activity_labels")] %>%  as.data.frame() # selecting the activity labels and transforming it into data frame
+names(labels) <- c("labels", "name") # renaming the columns
+labels <- labels %>% mutate(name = tolower(name)) # putting the name column into lower case
 
-
+measurement <- left_join(measurement, labels, by="labels") %>% 
+  select(name, source, everything()) %>% select(-labels) %>% rename(activity_label = name) 
+  
 
 ##------------------------------------------------------------------------
 ##  Appropriately labels the data set with descriptive variable names.   -
 ##------------------------------------------------------------------------
 
+names(measurement)
 
+tidy <- measurement %>% 
+  pivot_longer(
+    cols = "1 tBodyAcc-mean()-X":"543 fBodyBodyGyroJerkMag-std()",
+    names_to = c("feature", "measurement", "axis"),
+    names_sep ="-"
+  ) %>% 
+  separate(feature, into = c("line_number", "feature")) %>% 
+  separate(measurement, into = c("measurement", "parentheses")) %>% 
+  select(-c("line_number", "parentheses"))
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------

@@ -39,14 +39,16 @@ This can also be achieved with apply() but the map anonymous function call is ea
 - The test set and its labels are bound together using dplyr::bind_cols(). Note that this can also be achieved using base R do.call(cbind, dfs).
 - The X1100 column is then renamed into "labels" with dplyr::rename and the columns rearranged with dplyr::select(). An additional column named "source" (with the value "test") is created with dplyr::mutate() in order to identify the data source when it is merged with the training set.
 - The same thing is done with the training set and its corresponding labels.
-- The two tibbles are then merged using dplyr::bind_rows(). This can also be achieved with the base R do.call(rbind, dfs).
+- The two tibbles are then merged using dplyr::bind_rows(). This can also be achieved with the base R do.call(rbind, dfs). It is named "tidydata"
+- The features is extracted from the data and transformed into a character vector with the unlist() function. It is then used to rename all of the columns of "tidydata" that starts with X using dplyr::rename_at() which renames in place all of the columns starting with "X" (using grep to "look" into each column name) into all of the content of "features". Note that the renaming step could be done later in the analysis but it is more convenient to have it at this time because it facilitates the answer to the next question.
 
-** The outupt is a tibble with 10299 rows and 563 columns. Note that it is not a tidy data yet and the column names are still  messy.
+** The outupt is a tibble with 10299 rows and 563 columns with the column names from features. Note that it is not a tidy data yet and the column names are still  messy.
 
 2) Extracts only the measurements on the mean and standard deviation for each measurement.
 - In order to extract the measurements on the mean and standard deviation for each measurement, the dplyr::select() is used with the "contains()" helper to filter  every column that contains "mean" and "std".
 
-** The output is a tibble with 
+
+** The output is a tibble with 88 columns
 
 
 3) Uses descriptive activity names to name the activities in the data set
