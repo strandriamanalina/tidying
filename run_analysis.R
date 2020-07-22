@@ -14,7 +14,7 @@ suppressPackageStartupMessages(library(tidyverse))
 # list.dirs("./UCI HAR Dataset")
 
 ##--------------------------------------------------------------------
-##  Merging the training and the test sets to create one data set   -
+##  1. Merging the training and the test sets to create one data set   -
 ##--------------------------------------------------------------------
 
 # listing the files with their full paths
@@ -32,7 +32,6 @@ filenames <- list %>%
   gsub(pattern =".txt",replacement = "") %>% # This removes the extension
   tolower
 names(data) <- filenames # assigning names to the list
-glimpse(filenames)
 
 # Extracting the training and test sets
 data_test <- bind_cols(data[c("x_test", "y_test")]) %>% 
@@ -46,69 +45,54 @@ data_train <- bind_cols(data[c("x_train", "y_train")]) %>% rename(labels = X1100
 features <- data[("features")] %>%  unlist
 tidydata <- bind_rows(data_test, data_train) %>% 
   rename_at(vars(grep("X", names(.))), ~features) # This renames all of the columns that contain X
-str(tidydata)
 
 ##-----------------------------------------------------------------------------------------
-##  Extracting the measurements on the mean and standard deviation for each measurement   -
+##  2. Extracting the measurements on the mean and standard deviation for each measurement   -
 ##-----------------------------------------------------------------------------------------
 
 # Selecting the columns that contain mean and std
 measurement <- tidydata %>% 
   select(labels, source, contains("mean()")|contains("std()")) 
-str(measurement)
 
 ##-----------------------------------------------------------------------------
-##  Using descriptive activity names to name the activities in the data set   -
+##  3. Using descriptive activity names to name the activities in the data set   -
 ##-----------------------------------------------------------------------------
 # Adding the training labels
 labels <- data[c("activity_labels")] %>%  as.data.frame() # selecting the activity labels and transforming it into data frame
 names(labels) <- c("labels", "name") # renaming the columns
 labels <- labels %>% mutate(name = tolower(name)) # putting the name column into lower case
 
-measurement <- left_join(measurement, labels, by="labels") %>% 
-  select(name, source, everything()) %>% select(-labels) %>% rename(activity_label = name) 
-  
+measurement <- left_join(measurement, labels, by="labels") %>%  # This keep all the variables in the measurement table and don't consider the variables that do not have a key-paired in the labels table
+  select(name, source, everything()) %>% # arranging columns
+  select(-labels) %>% # selecting out the initial label column
+  rename(activity_label = name)
 
 ##------------------------------------------------------------------------
-##  Appropriately labels the data set with descriptive variable names.   -
+##  4. Appropriately labels the data set with descriptive variable names.   -
 ##------------------------------------------------------------------------
-
-names(measurement)
 
 tidy <- measurement %>% 
   pivot_longer(
     cols = "1 tBodyAcc-mean()-X":"543 fBodyBodyGyroJerkMag-std()",
     names_to = c("feature", "measurement", "axis"),
     names_sep ="-"
-  ) %>% 
+  ) %>% # This does the same thing as the (now deprecated) gather() function
   separate(feature, into = c("line_number", "feature")) %>% 
-  separate(measurement, into = c("measurement", "parentheses")) %>% 
-  select(-c("line_number", "parentheses"))
+  separate(measurement, into = c("measurement_type", "parentheses")) %>% 
+  select(-c("line_number", "parentheses")) %>% 
+  select(activity_label, feature, axis, measurement_type, value, source) %>% 
+  modify_if(is.character, as.factor)
 
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------
-##  From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.   -
+##  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.   -
 ##----------------------------------------------------------------------------------------------------------------------------------------------------
 
+# average of each variable for each activity and each subject
+result <- tidy %>% 
+  group_by(measurement_type, activity_label, feature, axis) %>% 
+  summarise(average =mean(value))
 
-# EXTRA
-## This part was not explicitly part of the assignment but I did it for fun
+# Saving the output
+write.table(result, "output.csv", row.name=FALSE)
 
-
-# Selecting the inertial signal files and loading them into data
-test_data <-  data %>% 
-  list_modify("subject_test"=NULL, "x_test"=NULL, "y_test"=NULL,
-              "subject_train"=NULL, "x_train"=NULL, "y_train"=NULL)
-
-# adding a column with the name of the dataframe and putting data into long tidy form
-inertial_signal <- test_data[grep("body|total", names(test_data))] %>% 
-  map2_df(names(.), ~ mutate(.x, type = .y)) %>% # This puts the dataframe name in a column and transforms the list into a data frame 
-  select(type, everything()) %>%  # Reordering columns
-  pivot_longer(cols = starts_with("X"), names_to = "readings", values_to = "values",) %>% # use this instead of gather 
-  mutate(readings = str_remove(readings, "X")) %>% # removes the X from the reading. did not remove it earlier because it makes the use of  pivot longer easier
-  separate(type, into = c("status", "sensor_type", "axe", "data_source"), sep = "_") %>% 
-  mutate_if(is.character, .funs = list(~as.factor(.))) %>% # changing all char columns into factor 
-  mutate (sensor_type = fct_recode(sensor_type, accelerometer = "acc", gyroscope = "gyro")) # changing factor names
-
-
-str(inertial_signal)
