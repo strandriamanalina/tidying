@@ -5,7 +5,7 @@ Acknowledgment
 [1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012
 
 - A warm thank you to David Hood for providing a thorough guide on how to approach this assignment. 
-here is the link to the blogpost : https://thoughtfulbloke.wordpress.com/2015/09/09/getting-and-cleaning-the-assignment/
+Here is the link to the blogpost : https://thoughtfulbloke.wordpress.com/2015/09/09/getting-and-cleaning-the-assignment/
 
 Package requirements
 ==================================================================
@@ -20,9 +20,9 @@ Package requirements
 - tidyr must be at least v1.0.0 (because of te use of tidyr::pivot_longer() function).
 - Code for reading the data (assuming the "output.csv" file is the working directory)
 data <- read.table("./output.csv", header = TRUE)
+View(data)
 
-
-How all of the scripts work and how they are connected ?
+How do all of the scripts work and how they are connected ?
 ==================================================================
 
 0) Initial step : This step allows to get a list of dataframes in one place with their original name for easy access.
@@ -48,9 +48,7 @@ This can also be achieved with apply() but the map anonymous function call is ea
 
 2) Extracts only the measurements on the mean and standard deviation for each measurement.
 - In order to extract the measurements on the mean and standard deviation for each measurement, the dplyr::select() is used with the "contains()" helper to filter  every column that contains "mean()" and "std()".
-- Here, the choice was made to include only the columns that end with "mean()" or "std()" :
- * This is in part due to the fact that columns that have "meanFreq" may be derived from other columns.
- * 
+- Here, the choice was made to include only the columns that end with "mean()" or "std()". Columns that contains mean in general (like meanFreq) could be computed.
 
 ** The output is a tibble with 68 columns and 10 299 rows.**
 
@@ -83,54 +81,10 @@ a Tidy data is data where:
 - Every row is an observation.
 - Every cell is a single value.
 
-Does tidy mean long ?
+Does the output checks out ?
+The data frame consists of	396 rows of  5 columns :
+- Each row is an observation : The average of one measurement type for one specific feature in one axis. It could be argued that the axis column and feature column need not be separated. However, it may be useful if there is a need to have a value for each set of feature ignoring the axis. In addition to that, it is relatively easy to always consider the feature column and axis together qhen doing an analysis.
+- Each column is a set of variables.
 
 
-
-The columns
-
-
-
-read the output by runnig the folowing code :
-data <- read.table("output.csv", header = TRUE)
-View(data)
-
-
-Variable names
-==================================================================
-
-
-
-
-
-
-
-The dataset includes the following files:
-=========================================
-
-- 'README.txt'
-
-- 'features_info.txt': Shows information about the variables used on the feature vector.
-
-- 'features.txt': List of all features.
-
-- 'activity_labels.txt': Links the class labels with their activity name.
-
-- 'train/X_train.txt': Training set.
-
-- 'train/y_train.txt': Training labels.
-
-- 'test/X_test.txt': Test set.
-
-- 'test/y_test.txt': Test labels.
-
-The following files are available for the train and test data. Their descriptions are equivalent. 
-
-- 'train/subject_train.txt': Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30. 
-
-- 'train/Inertial Signals/total_acc_x_train.txt': The acceleration signal from the smartphone accelerometer X axis in standard gravity units 'g'. Every row shows a 128 element vector. The same description applies for the 'total_acc_x_train.txt' and 'total_acc_z_train.txt' files for the Y and Z axis. 
-
-- 'train/Inertial Signals/body_acc_x_train.txt': The body acceleration signal obtained by subtracting the gravity from the total acceleration. 
-
-- 'train/Inertial Signals/body_gyro_x_train.txt': The angular velocity vector measured by the gyroscope for each window sample. The units are radians/second. 
 

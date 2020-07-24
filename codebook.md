@@ -1,30 +1,26 @@
 Content of the output table
 ==================================================================
-- Content of the output data frame
-'data.frame':	396 obs. of  5 variables:
- $ measurement_type: Factor w/ 2 levels "mean","std": 1 1 1 1 1 1 1 1 1 1 ...
- $ activity_label  : Factor w/ 6 levels "laying","sitting",..: 1 1 1 1 1 1 1 1 1 1 ...
- $ feature         : Factor w/ 17 levels "fBodyAcc","fBodyAccJerk",..: 1 1 1 2 2 2 3 4 5 6 ...
- $ axis            : Factor w/ 3 levels "X","Y","Z": 1 2 3 1 2 3 NA NA NA NA ...
- $ average         : num  -0.967 -0.953 -0.96 -0.98 -0.971 ...
 
+The data frame consists of	396 rows of  5 columns :
+- Each row is an observation : The average of one measurement type for one specific feature in one axis.
 
-- Levels of the factors :
-$measurement_type
-02 Levels : mean std
+- Each column is a set of variables.
 
-$activity_label
-06 Levels : laying sitting standing walking walking_downstairs walking_upstairs
+  - $ measurement_type: Factor w/ 2 levels "mean","std": 
 
-$feature
+  - $ activity_label  : Factor w/ 6 levels "laying","sitting",..: 
+laying sitting standing walking walking_downstairs walking_upstairs
+ 
+  - $ feature         : Factor w/ 17 levels : 
  [1] fBodyAcc             fBodyAccJerk         fBodyAccMag          fBodyBodyAccJerkMag 
  [5] fBodyBodyGyroJerkMag fBodyBodyGyroMag     fBodyGyro            tBodyAcc            
  [9] tBodyAccJerk         tBodyAccJerkMag      tBodyAccMag          tBodyGyro           
 [13] tBodyGyroJerk        tBodyGyroJerkMag     tBodyGyroMag         tGravityAcc         
 [17] tGravityAccMag      
-17 Levels : fBodyAcc fBodyAccJerk fBodyAccMag fBodyBodyAccJerkMag ... tGravityAccMag
+ 
+  - $ axis            : Factor w/ 3 levels "X","Y","Z": 
+ 
+ 
+  - $ average         : num  
 
-$axis
-[1] X    Y    Z    <NA>
-Levels: X Y Z
 
