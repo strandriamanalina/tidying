@@ -1,5 +1,5 @@
 # installing tidyverse if not present
-
+# install.packages("tidyverse")
 
 # Loading the packages - This code needs tidyverse to work as it is using readr, tidyr, purrr, stringr and forcats
 suppressPackageStartupMessages(library(tidyverse))
@@ -13,8 +13,9 @@ suppressPackageStartupMessages(library(tidyverse))
 # unzip("Dataset.zip")
 # list.dirs("./UCI HAR Dataset")
 
+
 ##--------------------------------------------------------------------
-##  1. Merging the training and the test sets to create one data set   -
+##  0. initial step  - getting a list of dataframes in one place with their original name for easy access.
 ##--------------------------------------------------------------------
 
 # listing the files with their full paths
@@ -33,13 +34,22 @@ filenames <- list %>%
   tolower
 names(data) <- filenames # assigning names to the list
 
+
+
+##--------------------------------------------------------------------
+##  1. Merging the training and the test sets to create one data set   -
+##--------------------------------------------------------------------
+
+# renaming the columns inside "y_test" and "y_train"
+data_t <- data[c("y_test", "y_train")] %>% 
+  map(~ .x %>% rename_all(~ str_replace_all(., c("X1" = "labels"))))
+
 # Extracting the training and test sets
-data_test <- bind_cols(data[c("x_test", "y_test")]) %>% 
-  rename(labels = X1100) %>%  # renaming the y_test label
+data_test <- bind_cols(data[c("x_test")], data_t[c("y_test")]) %>% 
   mutate(source = "test_set") %>% # adding a column to identify the source of the data
   select(labels, source, everything()) # arranging column order
 # doing the same with the training sets
-data_train <- bind_cols(data[c("x_train", "y_train")]) %>% rename(labels = X1100) %>%  mutate(source = "training_set") %>% select(labels, source, everything())
+data_train <- bind_cols(data[c("x_train")], data_t[c("y_train")]) %>% mutate(source = "training_set") %>% select(labels, source, everything())
 
 # Merging the training and test sets and adding the features name
 features <- data[("features")] %>%  unlist
@@ -62,7 +72,7 @@ labels <- data[c("activity_labels")] %>%  as.data.frame() # selecting the activi
 names(labels) <- c("labels", "name") # renaming the columns
 labels <- labels %>% mutate(name = tolower(name)) # putting the name column into lower case
 
-measurement <- left_join(measurement, labels, by="labels") %>%  # This keep all the variables in the measurement table and don't consider the variables that do not have a key-paired in the labels table
+measurement_named <- left_join(measurement, labels, by="labels") %>%  # This keep all the variables in the measurement table and don't consider the variables that do not have a key-paired in the labels table
   select(name, source, everything()) %>% # arranging columns
   select(-labels) %>% # selecting out the initial label column
   rename(activity_label = name)
@@ -70,17 +80,17 @@ measurement <- left_join(measurement, labels, by="labels") %>%  # This keep all 
 ##------------------------------------------------------------------------
 ##  4. Appropriately labels the data set with descriptive variable names.   -
 ##------------------------------------------------------------------------
-tidy <- measurement %>% 
+tidy <- measurement_named %>% 
   pivot_longer(
     cols = "1 tBodyAcc-mean()-X":"543 fBodyBodyGyroJerkMag-std()",
     names_to = c("feature", "measurement", "axis"),
     names_sep ="-"
-  ) %>% # This does the same thing as the (now deprecated) gather() function
-  separate(feature, into = c("line_number", "feature")) %>% 
+  ) %>% # This does the same thing as the (now deprecated) gather() function = transforming column name into separate variables
+  separate(feature, into = c("line_number", "feature")) %>%  # This separates the columns. Just for a cleaner output.
   separate(measurement, into = c("measurement_type", "parentheses")) %>% 
   select(-c("line_number", "parentheses")) %>% 
   select(activity_label, feature, axis, measurement_type, value, source) %>% 
-  modify_if(is.character, as.factor)
+  modify_if(is.character, as.factor) # This transforms all of the character variables into factor  
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------
 ##  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.   -

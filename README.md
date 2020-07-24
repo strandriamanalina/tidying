@@ -21,6 +21,7 @@ Package requirements
 - Code for reading the data (assuming the "output.csv" file is the working directory)
 data <- read.table("./output.csv", header = TRUE)
 View(data)
+- Note that running the analysis will create a data frame named "output.csv"
 
 How do all of the scripts work and how they are connected ?
 ==================================================================
@@ -36,27 +37,32 @@ This can also be achieved with apply() but the map anonymous function call is ea
 
 ** The output is a list of 8 tibbles with their names set as the file names which contains the following :
     * "activity_labels" "features_info" "features" "readme" "x_test" "y_test" "x_train" "y_train"
+    The output is a list named "data".
 
 1) Merges the training and the test sets to create one data set :
+- The first step is renaming the column of "y_test" and "y_train" as these are named "X1". One way to achieve this is subsetting these two elemets inside one list and renaming the columns inside a purrr:map function by replacing all of the "X1" with "labels" with the stringr::str_replace_all() function inside a dply::rename_all. There are easier (and maybe clearer ways) to achieve this by sleecting the tables individually and transforming them into  a tibble or a data frame and renaming the columns.
 - The test set and its labels are bound together using dplyr::bind_cols(). Note that this can also be achieved using base R do.call(cbind, dfs).
-- The X1100 column is then renamed into "labels" with dplyr::rename and the columns rearranged with dplyr::select(). An additional column named "source" (with the value "test") is created with dplyr::mutate() in order to identify the data source when it is merged with the training set.
+-  An additional column named "source" (with the value "test") is created with dplyr::mutate() in order to identify the data source when it is merged with the training set.
 - The same thing is done with the training set and its corresponding labels.
 - The two tibbles are then merged using dplyr::bind_rows(). This can also be achieved with the base R do.call(rbind, dfs). It is named "tidydata"
 - The features is extracted from the data and transformed into a character vector with the unlist() function. It is then used to rename all of the columns of "tidydata" that starts with X using dplyr::rename_at() which renames in place all of the columns starting with "X" (using grep to "look" into each column name) into all of the content of "features". Note that the renaming step could be done later in the analysis but it is more convenient to have it at this time because it facilitates the answer to the next question.
 
 ** The outupt is a tibble with 10299 rows and 563 columns with the column names from features. Note that it is not a tidy data yet and the column names are still  messy.**
+The output is a tibble named "tidydata".
 
 2) Extracts only the measurements on the mean and standard deviation for each measurement.
 - In order to extract the measurements on the mean and standard deviation for each measurement, the dplyr::select() is used with the "contains()" helper to filter  every column that contains "mean()" and "std()".
 - Here, the choice was made to include only the columns that end with "mean()" or "std()". Columns that contains mean in general (like meanFreq) could be computed.
 
 ** The output is a tibble with 68 columns and 10 299 rows.**
+The output is tibble named "measurement".
 
 3) Uses descriptive activity names to name the activities in the data set :
 - First, the activity labels are extracted from the data with the base R subset then transformed into a data frame. The choice here is motivated by the fact that for some reasons, a tibble did not work very well. The columns were renamed then the name column was put in lower case using tolower() inside the dplyr::mutate()function (by replacing the column with itself using the same column name).
 - The "labels" and "measurement" data frame are merged using dplyr::left_join(). The columns are rearranged. The initial "labels" column is replaced with the new one "name" which contains the named activities.
 
 ** The output is a tibble with 68 columns and 10 299 rows with descriptive activity names. **
+The output is tibble named "measurement_named".
 
 4) Appropriately labels the data set with descriptive variable names :
 - In order to label the dataset more appropriately, some transformation are necessary : 
@@ -66,11 +72,13 @@ This can also be achieved with apply() but the map anonymous function call is ea
    * Lastly, the character columns are transformed into factors with the purrr::modify_if() function.
 
 ** The output is a long tibble with 6 named column and 679 734 rows with descriptive variable names. **
+The output is tibble named "tidy".
 
 5) From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject :
 - This is done by using dplyr::group_by() then dplyr::summarise() : group_by uses the provided group "behind the scenes" then summarise takes the calculation by each provided group.
 
 ** The output is a tibble of 5 columns and 396 rows. **
+The output is tibble named "result".
 
 
 Is the output file really tidy ?
@@ -85,6 +93,7 @@ Does the output checks out ?
 The data frame consists of	396 rows of  5 columns :
 - Each row is an observation : The average of one measurement type for one specific feature in one axis. It could be argued that the axis column and feature column need not be separated. However, it may be useful if there is a need to have a value for each set of feature ignoring the axis. In addition to that, it is relatively easy to always consider the feature column and axis together qhen doing an analysis.
 - Each column is a set of variables.
+- As the notion of tidy data may vary from one person to another (even if the definition looks clear), the output may alwas differ.
 
 
 
