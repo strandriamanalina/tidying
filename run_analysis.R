@@ -102,5 +102,5 @@ result <- tidy %>%
   summarise(average =mean(value))
 
 # Saving the output
-write.table(result, "output.csv", row.name=FALSE)
+write.table(result, "output.txt", row.name=FALSE)
 
