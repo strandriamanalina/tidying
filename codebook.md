@@ -8,10 +8,11 @@ The data frame consists of	396 rows of  5 columns :
 
   - $ measurement_type: Factor w/ 2 levels "mean","std": 
 
-  - $ activity_label  : Factor w/ 6 levels "laying","sitting",..: 
+  - $ activity_label  : Factor w/ 6 levels : 
 laying sitting standing walking walking_downstairs walking_upstairs
  
   - $ feature         : Factor w/ 17 levels : 
+
  [1] fBodyAcc             fBodyAccJerk         fBodyAccMag          fBodyBodyAccJerkMag 
  [5] fBodyBodyGyroJerkMag fBodyBodyGyroMag     fBodyGyro            tBodyAcc            
  [9] tBodyAccJerk         tBodyAccJerkMag      tBodyAccMag          tBodyGyro           
