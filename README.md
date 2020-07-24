@@ -24,7 +24,7 @@ data <- read.table("./output.txt", header = TRUE)
 
 View(data)
 
-- Note that running the analysis will create a data frame named "output.csv"
+- Note that running the analysis will create a data frame named "output.txt"
 
 How do all of the scripts work and how they are connected ?
 ==================================================================
