@@ -70,7 +70,6 @@ measurement <- left_join(measurement, labels, by="labels") %>%  # This keep all 
 ##------------------------------------------------------------------------
 ##  4. Appropriately labels the data set with descriptive variable names.   -
 ##------------------------------------------------------------------------
-
 tidy <- measurement %>% 
   pivot_longer(
     cols = "1 tBodyAcc-mean()-X":"543 fBodyBodyGyroJerkMag-std()",
@@ -82,7 +81,6 @@ tidy <- measurement %>%
   select(-c("line_number", "parentheses")) %>% 
   select(activity_label, feature, axis, measurement_type, value, source) %>% 
   modify_if(is.character, as.factor)
-
 
 ##----------------------------------------------------------------------------------------------------------------------------------------------------
 ##  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.   -

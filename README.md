@@ -7,9 +7,6 @@ Acknowledgment
 - A warm thank you to David Hood for providing a thorough guide on how to approach this assignment. 
 here is the link to the blogpost : https://thoughtfulbloke.wordpress.com/2015/09/09/getting-and-cleaning-the-assignment/
 
-- Various parts of the script were adapted from these sources :
-
-
 Package requirements
 ==================================================================
 - In order to run the "run_analysis.R" script,  the tidyverse package is required. It is a collection of R packages designed for data science. It contains the following packages : 
@@ -21,6 +18,8 @@ Package requirements
 #> ✔ ggplot2 3.3.0
 #> ✔ forcats 0.5.0
 - tidyr must be at least v1.0.0 (because of te use of tidyr::pivot_longer() function).
+- Code for reading the data (assuming the "output.csv" file is the working directory)
+data <- read.table("./output.csv", header = TRUE)
 
 
 How all of the scripts work and how they are connected ?
@@ -38,7 +37,7 @@ This can also be achieved with apply() but the map anonymous function call is ea
 ** The output is a list of 8 tibbles with their names set as the file names which contains the following :
     * "activity_labels" "features_info" "features" "readme" "x_test" "y_test" "x_train" "y_train"
 
-1) Merges the training and the test sets to create one data set
+1) Merges the training and the test sets to create one data set :
 - The test set and its labels are bound together using dplyr::bind_cols(). Note that this can also be achieved using base R do.call(cbind, dfs).
 - The X1100 column is then renamed into "labels" with dplyr::rename and the columns rearranged with dplyr::select(). An additional column named "source" (with the value "test") is created with dplyr::mutate() in order to identify the data source when it is merged with the training set.
 - The same thing is done with the training set and its corresponding labels.
@@ -64,8 +63,9 @@ This can also be achieved with apply() but the map anonymous function call is ea
 4) Appropriately labels the data set with descriptive variable names :
 - In order to label the dataset more appropriately, some transformation are necessary : 
    * First, the tidyr::pivot_longer() function is used to make the column names (that contain the feature name) parts into rows. This works by separating the column name into 3 as they are separated by "-".
+   This introduces NAs in the axis column because some features do not have any XYZ axis. This is the choice made in tidying the data.
    * In addition, the tidyr::separate() function is used to have a cleaner name: by removing the parentheses and line number.
-   * Lastly, the character columns are are transformed into factors with the purrr::modify_if() function.
+   * Lastly, the character columns are transformed into factors with the purrr::modify_if() function.
 
 ** The output is a long tibble with 6 named column and 679 734 rows with descriptive variable names. **
 
@@ -86,8 +86,13 @@ a Tidy data is data where:
 Does tidy mean long ?
 
 
+
+The columns
+
+
+
 read the output by runnig the folowing code :
-data <- read.table(file_path, header = TRUE)
+data <- read.table("output.csv", header = TRUE)
 View(data)
 
 
