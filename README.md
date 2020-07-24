@@ -19,8 +19,11 @@ Package requirements
 #> ✔ forcats 0.5.0
 - tidyr must be at least v1.0.0 (because of te use of tidyr::pivot_longer() function).
 - Code for reading the data (assuming the "output.csv" file is the working directory)
+
 data <- read.table("./output.csv", header = TRUE)
+
 View(data)
+
 - Note that running the analysis will create a data frame named "output.csv"
 
 How do all of the scripts work and how they are connected ?
